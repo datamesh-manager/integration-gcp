@@ -1,53 +1,12 @@
+import base64
 import os
 import json
-import requests
 import functions_framework
 import datameshmanager_client as dmm
-from google.cloud import bigquery, secretmanager, pubsub
-
-
-def get_project_id():
-    metadata_url = 'http://metadata.google.internal/computeMetadata/v1/project/project-id'
-    headers = {'Metadata-Flavor': 'Google'}
-    response = requests.get(metadata_url, headers=headers)
-    return response.text
-
+from google.cloud import bigquery
 
 # Initialize the BigQuery and DataMeshManager clients
 bq_client = bigquery.Client()
-secret = secretmanager.SecretManagerServiceClient()
-subscriber = pubsub.SubscriberClient()
-project_id = get_project_id()
-topic_name = 'projects/{project_id}/topics/{topic}'.format(
-    project_id=project_id,
-    topic=os.getenv("topic"),  # TODO: Use Environment
-)
-full_api_key_secret_name = 'projects/{project_id}/secrets/{secret}/versions/latest'.format(
-    project_id=project_id,
-    secret=os.getenv("secret"),  # TODO: Use Environment
-)
-
-
-def get_api_key() -> str:
-    return secret.access_secret_version(name=full_api_key_secret_name).payload.data.decode("utf-8")
-
-        
-# Load events from a json file
-def get_events() -> list:
-    response = subscriber.pull(subscription=subscription_name, max_messages=30)
-    messages = []
-    ack_ids = []
-    received_messages = []
-    for message in response.received_messages:
-        data = json.loads(message.message.data)
-        messages.append(data)
-        received_messages.append(message)
-        ack_ids.append(message.ack_id)
-        
-    if ack_ids:
-        subscriber.acknowledge(subscription=subscription_name, ack_ids=ack_ids)
-
-    return messages
 
 
 def get_dataset_and_view_id(event):
@@ -131,18 +90,16 @@ def deauthorize_view(source_dataset_id: str, view_id: str):
     bq_client.update_dataset(dataset, ["access_entries"])
     
 
-api_key = get_api_key()
-dmm_client = dmm.DataMeshManagerClient(api_key)
+dmm_client = dmm.DataMeshManagerClient(os.getenv("API_KEY"))
+
 
 @functions_framework.cloud_event
-def main(cloud_event):
-    # Get the events from the json file
-    events = get_events()
+def main(event):
+    print(event["data"])
     
-    # Process each event from the list
-    for event in events:
-        process_event(event)
+    if "data" in event:
+        data = base64.b64decode(event["data"]).decode("utf-8")
+        message = json.loads(data)
+        process_event(message)
     
-
-if __name__ == "__main__":
-    main(None)
+    return "OK"

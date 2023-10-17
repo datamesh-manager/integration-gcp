@@ -1,3 +1,8 @@
+# resource "google_service_account" "functions" {
+#   account_id = "dmm-functions"
+#   display_name = "DMM Functions"
+# }
+
 resource "google_cloudfunctions2_function" "poll_feed" {
   name        = "poll_feed"
   location    = var.region
@@ -24,6 +29,17 @@ resource "google_cloudfunctions2_function" "poll_feed" {
     max_instance_count = 1
     available_memory   = "256M"
     timeout_seconds    = 60
+
+    environment_variables = {
+      TOPIC = google_pubsub_topic.events.id
+    }
+
+    secret_environment_variables {
+      key = "API_KEY"
+      project_id = data.google_project.project.project_id
+      secret = google_secret_manager_secret.dmm_api_key.secret_id
+      version = "latest"
+    }
   }
 }
 
@@ -53,5 +69,15 @@ resource "google_cloudfunctions2_function" "manage_permissions" {
     max_instance_count = 1
     available_memory   = "256M"
     timeout_seconds    = 60
+    environment_variables = {
+      SUBSCRIPTION = google_pubsub_topic.events.id
+    }
+
+    secret_environment_variables {
+      key = "API_KEY"
+      project_id = data.google_project.project.project_id
+      secret = google_secret_manager_secret.dmm_api_key.secret_id
+      version = "latest"
+    }
   }
 }
