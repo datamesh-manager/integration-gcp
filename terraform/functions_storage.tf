@@ -19,19 +19,19 @@ data "archive_file" "manage_permissions" {
 }
 
 resource "google_storage_bucket" "functions_bucket" {
-    name = "alexander-endris-cloud-functions-source"
+    name = var.functions.source_bucket
     location = "EU"
     uniform_bucket_level_access = true
 }
 
 resource "google_storage_bucket_object" "poll_feed" {
-    name = "poll_feed.zip"
+    name = "poll_feed.${data.archive_file.poll_feed.output_base64sha256}.zip"
     source = data.archive_file.poll_feed.output_path
     bucket = google_storage_bucket.functions_bucket.name
 }
 
 resource "google_storage_bucket_object" "manage_permissions" {
-    name = "manage_permissions.zip"
+    name = "manage_permissions.${data.archive_file.poll_feed.output_base64sha256}.zip"
     source = data.archive_file.poll_feed.output_path
     bucket = google_storage_bucket.functions_bucket.name
 }

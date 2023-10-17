@@ -1,5 +1,7 @@
 .idea
 .fleet
+*.json
+*.zip
 
 **/.terraform
 **/.terraform.*

@@ -1,9 +1,9 @@
 resource "google_pubsub_topic" "scheduler" {
-    name = "polling_scheduler"
+    name = var.pubsub.scheduler_topic
 }
 
 resource "google_cloud_scheduler_job" "poll_trigger" {
-    name = "poll-trigger"
+    name = var.functions.scheduler_job
     description ="trigger the cloud function that polls the datamesh manager"
     schedule = "* * * * *" # Every minute
     

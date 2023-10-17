@@ -1,11 +1,6 @@
-# resource "google_service_account" "functions" {
-#   account_id = "dmm-functions"
-#   display_name = "DMM Functions"
-# }
-
 resource "google_cloudfunctions2_function" "poll_feed" {
-  name        = "poll_feed"
-  location    = var.region
+  name        = var.functions.polling_function
+  location    = var.google.region
   description = "Polling events from Datamesh-Manager"
 
   build_config {
@@ -32,6 +27,7 @@ resource "google_cloudfunctions2_function" "poll_feed" {
 
     environment_variables = {
       TOPIC = google_pubsub_topic.events.id
+      FIRESTORE_DOCUMENT = google_firestore_document.event_id.id
     }
 
     secret_environment_variables {
@@ -44,8 +40,8 @@ resource "google_cloudfunctions2_function" "poll_feed" {
 }
 
 resource "google_cloudfunctions2_function" "manage_permissions" {
-  name        = "manage_permissions"
-  location    = var.region
+  name        = var.functions.manage_function
+  location    = var.google.region
   description = "Manages permissions based on events from the datamesh manager."
 
   build_config {
