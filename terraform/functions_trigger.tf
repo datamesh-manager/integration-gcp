@@ -9,6 +9,6 @@ resource "google_cloud_scheduler_job" "poll_trigger" {
     
     pubsub_target {
       topic_name = google_pubsub_topic.scheduler.id
-      data = "" # no need for data
+      data = "{}" # no need for data
     }
 }
