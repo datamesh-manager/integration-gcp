@@ -63,6 +63,7 @@ def authorize_view(source_dataset_id: str, view_id: str):
     entries.append(new_entry)
     dataset.access_entries = entries
     bq_client.update_dataset(dataset, ["access_entries"])
+    print("Authorized view: ", table.reference)
 
 
 def find_entry(entries, api_repr):
@@ -88,18 +89,19 @@ def deauthorize_view(source_dataset_id: str, view_id: str):
     entries.remove(entry)
     dataset.access_entries = entries
     bq_client.update_dataset(dataset, ["access_entries"])
-    
+    print("Deauthorized view: ", table.reference)
 
+    
 dmm_client = dmm.DataMeshManagerClient(os.getenv("API_KEY"))
 
 
 @functions_framework.cloud_event
 def main(event):
-    print(event["data"])
-    
-    if "data" in event:
-        data = base64.b64decode(event["data"]).decode("utf-8")
-        message = json.loads(data)
+    data = event.data["message"]["data"]
+    if data:
+        decoded_data = base64.b64decode(data).decode("utf-8")
+        message = json.loads(decoded_data)
+        print(json.dumps(message))
         process_event(message)
     
     return "OK"

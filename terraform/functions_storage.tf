@@ -31,7 +31,7 @@ resource "google_storage_bucket_object" "poll_feed" {
 }
 
 resource "google_storage_bucket_object" "manage_permissions" {
-    name = "manage_permissions.${data.archive_file.poll_feed.output_base64sha256}.zip"
-    source = data.archive_file.poll_feed.output_path
+    name = "manage_permissions.${data.archive_file.manage_permissions.output_base64sha256}.zip"
+    source = data.archive_file.manage_permissions.output_path
     bucket = google_storage_bucket.functions_bucket.name
 }
