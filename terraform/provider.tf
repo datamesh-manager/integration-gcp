@@ -12,6 +12,7 @@ provider "google" {
   region = var.google.region
 }
 
+# Merely uses as a reference for where the project name or id are needed
 data "google_project" "project" {
 
 }
