@@ -2,6 +2,7 @@ import base64
 import os
 import json
 import functions_framework
+import datameshmanager_client as dmm
 from permissions_manager import PermissionsManager
 from google.cloud import bigquery
 

@@ -1,12 +1,12 @@
+import json
 import datameshmanager_client as dmm
 from google.cloud import bigquery
 
 
 class PermissionsManager:
-    def __init__(self, dmm_client, bq_client, ):
+    def __init__(self, dmm_client, bq_client):
         self._dmm_client = dmm_client
         self._bq_client = bq_client
-        pass
 
     def process_event(self, event):
         # Initialize the DataMeshManagerEvent with the event
@@ -54,6 +54,7 @@ class PermissionsManager:
         entry_exists = any(entry.entity_id == new_entry.entity_id and entry.role == new_entry.role for entry in entries)
     
         if entry_exists:
+            PermissionsManager._log_warning(f"Couldn't authorize view. Authorization for view {view_id} already exists.")
             return
     
         entries.append(new_entry)
@@ -71,13 +72,22 @@ class PermissionsManager:
         entry = PermissionsManager._find_entry(entries, table.reference.to_api_repr())
     
         if not entry:
+            PermissionsManager._log_warning(f"Couldn't deauthorize view. No authorization for view {view_id} exists.")
             return
     
         entries.remove(entry)
         dataset.access_entries = entries
         self._bq_client.update_dataset(dataset, ["access_entries"])
         print("Deauthorized view: ", table.reference)
-        
+
+    @staticmethod
+    def _log_warning(message):
+        entry = dict(
+            severity="WARNING",
+            message=message
+        )
+        print(json.dumps(entry))
+
     @staticmethod
     def _find_entry(entries, api_repr):
         # Iterate over the entries to find the matching entry
