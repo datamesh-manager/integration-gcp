@@ -37,7 +37,11 @@ class DataMeshManagerClient:
         self._base_url = "https://api.datamesh-manager.com/api/"
 
     def get_events(self, last_event_id):
-        url = f"{self._base_url}{self._events}?lastEventId={last_event_id}"
+        if last_event_id:
+            url = f"{self._base_url}{self._events}?lastEventId={last_event_id}"
+        else:
+            url = f"{self._base_url}{self._events}"
+            
         headers = {
             'accept': "application/cloudevents-batch+json",
             'x-api-key': self._api_key
