@@ -18,10 +18,7 @@ class PermissionsManager:
         elif dmm_event.type.endswith('DataUsageAgreementDeactivatedEvent'):
             self._deauthorize(dmm_event)
 
-    def _get_dataset_and_view_id(self, event):
-        # Get the data usage agreement from the event subject
-        agreement = self._dmm_client.get_data_usage_agreement(event.subject)
-    
+    def _get_dataset_and_view_id(self, agreement):
         # Retrieve the provider and consumer data products from the agreement
         provider = self._dmm_client.get_data_product(agreement.get_provider_id())
         consumer = self._dmm_client.get_data_product(agreement.get_consumer_id())
@@ -33,14 +30,22 @@ class PermissionsManager:
         return source_dataset_id, view_id
     
     def _authorize(self, event):
-        source_dataset_id, view_id = self._get_dataset_and_view_id(event)
+        # Get the data usage agreement from the event subject
+        agreement = self._dmm_client.get_data_usage_agreement(event.subject)
+
+        source_dataset_id, view_id = self._get_dataset_and_view_id(agreement)
         # Authorize the view with source dataset ID and view ID
         self._authorize_view(source_dataset_id, view_id)
+        self._upsert_data_usage_agreement_tags(agreement, "gcp-integration-active")
     
     def _deauthorize(self, event):
-        source_dataset_id, view_id = self._get_dataset_and_view_id(event)
+        # Get the data usage agreement from the event subject
+        agreement = self._dmm_client.get_data_usage_agreement(event.subject)
+
+        source_dataset_id, view_id = self._get_dataset_and_view_id(agreement)
         # De-authorize the view with source dataset ID and view ID
         self._deauthorize_view(source_dataset_id, view_id)
+        self._upsert_data_usage_agreement_tags(agreement, "gcp-integration-inactive")
 
     def _authorize_view(self, source_dataset_id: str, view_id: str):
         # Get the dataset and table from BigQuery
@@ -79,6 +84,9 @@ class PermissionsManager:
         dataset.access_entries = entries
         self._bq_client.update_dataset(dataset, ["access_entries"])
         print("Deauthorized view: ", table.reference)
+
+    def _upsert_data_usage_agreement_tags(self, data_usage_agreement, tag):
+        self._dmm_client.put_data_usage_agreement(data_usage_agreement, {"tags": ["gcp-integration", tag]})
 
     @staticmethod
     def _log_warning(message):

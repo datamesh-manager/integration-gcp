@@ -1,0 +1,19 @@
+google = {
+  project = "my-project"
+  region  = "gcp-region"
+}
+secret = {
+  name                     = "secret_name"
+  datamesh_manager_api_key = "dmm_api_key"
+}
+functions = {
+  source_bucket    = "name_of_function_source_bucket"
+  polling_function = "poll_feed"
+  manage_function  = "manage_permissions"
+  scheduler_job = "poll_trigger"
+}
+pubsub = {
+  event_topic     = "dmm_events_topic"
+  scheduler_topic = "polling_scheduler_topic"
+}
+firestore_collection_name = "last_event_collection"

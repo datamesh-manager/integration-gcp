@@ -1,15 +1,18 @@
-from requests import get
+from requests import get, put
 
 
 class DataUsageAgreement:
     def __init__(self, json):
-        self._json = json
+        self.json = json
+
+    def get_id(self):
+        return self.json["info"]["id"]
 
     def get_provider_id(self):
-        return self._json["provider"]["dataProductId"]
+        return self.json["provider"]["dataProductId"]
 
     def get_consumer_id(self):
-        return self._json["consumer"]["dataProductId"]
+        return self.json["consumer"]["dataProductId"]
 
 
 class DataMeshManagerEvent:
@@ -36,7 +39,6 @@ class DataMeshManagerClient:
         self._api_key = api_key
         self._base_url = "https://api.datamesh-manager.com/api/"
 
-    
     def get_data_usage_agreement(self, id) -> DataUsageAgreement:
         url = f"{self._base_url}{self._data_usage_agreements}/{id}"
         headers = {
@@ -45,6 +47,14 @@ class DataMeshManagerClient:
         }
         r = get(url, headers=headers)
         return DataUsageAgreement(r.json())
+
+    def put_data_usage_agreement(self, data_usage_agreement: DataUsageAgreement, tags: dict):
+        url = f"{self._base_url}{self._data_usage_agreements}/{data_usage_agreement.get_id()}"
+        headers = {
+            'accept': "application/json",
+            'x-api-key': self._api_key
+        }
+        r = put(url, headers=headers, json={**data_usage_agreement.json, **tags})
 
     def get_data_product(self, id) -> DataProduct:
         url = f"{self._base_url}{self._data_products}/{id}"

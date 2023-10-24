@@ -1,8 +1,8 @@
 import unittest
-from datameshmanager_client import DataMeshManagerEvent
+from datameshmanager_client import DataMeshManagerEvent, DataUsageAgreement
 from permissions_manager import PermissionsManager
 from google.cloud import bigquery
-from unittest.mock import patch, call, Mock
+from unittest.mock import patch, call, Mock, ANY
 
 
 class TestPermissionsManager(unittest.TestCase):
@@ -32,8 +32,7 @@ class TestPermissionsManager(unittest.TestCase):
         mock_deauthorize.assert_called_once()
     
     def test_get_dataset_and_view_id(self):
-        test_event = DataMeshManagerEvent({"subject": "test", "type": "test"})
-        
+
         mock_agreement = Mock()
         mock_agreement.get_provider_id.return_value = "provider_id"
         mock_agreement.get_consumer_id.return_value = "consumer_id"
@@ -42,15 +41,13 @@ class TestPermissionsManager(unittest.TestCase):
         mock_product.get_custom.return_value = "test.gcp-table-id"
         
         mock_dmm_client = Mock()
-        mock_dmm_client.get_data_usage_agreement.return_value = mock_agreement
         mock_dmm_client.get_data_product.return_value = mock_product
         
         permissions_manager = PermissionsManager(mock_dmm_client, "bq_client")
         
-        permissions_manager._get_dataset_and_view_id(test_event)
+        permissions_manager._get_dataset_and_view_id(mock_agreement)
         
         mock_dmm_client.get_data_product.assert_has_calls([call("provider_id"), call("consumer_id")])
-        mock_dmm_client.get_data_usage_agreement.assert_called_with("test")
         mock_agreement.get_provider_id.assert_called()
         mock_agreement.get_consumer_id.assert_called()
         assert mock_product.get_custom.call_count == 2
@@ -58,24 +55,32 @@ class TestPermissionsManager(unittest.TestCase):
     @patch.object(PermissionsManager, "_get_dataset_and_view_id")
     @patch.object(PermissionsManager, "_authorize_view")
     def test_authorize(self, mock_authorize_view, mock_get_dataset_and_view_id):
-        permissions_manager = PermissionsManager("dmm_client", "bq_client")
+        mock_dmm_client = Mock()
+        permissions_manager = PermissionsManager(mock_dmm_client, "bq_client")
         mock_get_dataset_and_view_id.return_value = ("mock_dataset_id", "mock_view_id")
+
+        event = DataMeshManagerEvent({"subject": "subject", "type": "type"})
+        permissions_manager._authorize(event)
         
-        permissions_manager._authorize("test")
-        
-        mock_get_dataset_and_view_id.assert_called_with("test")
+        mock_get_dataset_and_view_id.assert_called_once()
+        mock_dmm_client.get_data_usage_agreement.assert_called_once()
         mock_authorize_view.assert_called_with("mock_dataset_id", "mock_view_id")    
+        mock_dmm_client.put_data_usage_agreement.assert_called_with(ANY,{'tags': ['gcp-integration', 'gcp-integration-active']})
 
     @patch.object(PermissionsManager, "_get_dataset_and_view_id")
     @patch.object(PermissionsManager, "_deauthorize_view")
     def test_deauthorize(self, mock_deauthorize_view, mock_get_dataset_and_view_id):
-        permissions_manager = PermissionsManager("dmm_client", "bq_client")
+        mock_dmm_client = Mock()
+        permissions_manager = PermissionsManager(mock_dmm_client, "bq_client")
         mock_get_dataset_and_view_id.return_value = ("mock_dataset_id", "mock_view_id")
         
-        permissions_manager._deauthorize("test")
+        event = DataMeshManagerEvent({"subject": "subject", "type": "type"})
+        permissions_manager._deauthorize(event)
         
-        mock_get_dataset_and_view_id.assert_called_with("test")
+        mock_get_dataset_and_view_id.assert_called_once()
+        mock_dmm_client.get_data_usage_agreement.assert_called_once()
         mock_deauthorize_view.assert_called_with("mock_dataset_id", "mock_view_id")
+        mock_dmm_client.put_data_usage_agreement.assert_called_with(ANY,{'tags': ['gcp-integration', 'gcp-integration-inactive']})
         
     def test_authorize_view_no_entry(self):
         mock_bq_client = Mock()
