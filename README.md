@@ -1,4 +1,4 @@
-# Data Mesh Manager - AWS Integration
+# Data Mesh Manager - GCP Integration
 
 This repository contains a complete setup, which allows you to integrate the [Data Mesh Manager](https://www.datamesh-manager.com/) into a Google Cloud Platform (GCP) account.
 It uses only serverless GCP functionality like Cloud Functions, Firestore, Google Storace, Secretmanager, PubSub and Cloud Scheduler.
