@@ -20,7 +20,8 @@ For a better understanding of how the integration works, see this simple archite
                                           ▲           ▲
                                           │           │
                                           │           │
-                                          │           │ ┌─────────────────────────────────────────┼───────────┼─────────────────────────────────────────────┐
+                                          │           │
+┌─────────────────────────────────────────┼───────────┼─────────────────────────────────────────────┐
 │                                         │           │                                             │
 │                                         │           │ 4. read usage agreement information         │
 │                     1. pull events      │           │                                             │
@@ -64,8 +65,8 @@ For a better understanding of how the integration works, see this simple archite
 
 ## Usage
 ### Prerequisites
-- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
-- [Python3.10](https://www.python.org/downloads/release/python-3100/)
+- [Terraform](https://developer.hashicorp.com/terraform/tutorials/gcp-get-started/install-cli)
+- [Python3.11](https://www.python.org/downloads/release/python-3110/)
 
 ### Prepare your data products
 To allow the integration to work, your data products in Data Mesh manager must contain some metadata in their [custom fields](https://docs.datamesh-manager.com/dataproducts).
