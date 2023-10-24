@@ -1,7 +1,7 @@
 # Data Mesh Manager - GCP Integration
 
-This repository contains a complete setup, which allows you to integrate the [Data Mesh Manager](https://www.datamesh-manager.com/) into a Google Cloud Platform (GCP) account.
-It uses only serverless GCP functionality like Cloud Functions, Firestore, Google Storace, Secretmanager, PubSub and Cloud Scheduler.
+This repository contains an example how to integrate the [Data Mesh Manager](https://www.datamesh-manager.com/) into a Google Cloud Platform (GCP) account and automate the permission granting in BigQuery based on agreed data useage agreements.
+It reads the Data Mesh Manager [events API](https://docs.datamesh-manager.com/events) and uses serverless GCP functionality like Cloud Functions, Firestore, Google Storace, Secretmanager, PubSub and Cloud Scheduler.
 The infrastructure is set up by using Terraform.
 
 ## Limitations
